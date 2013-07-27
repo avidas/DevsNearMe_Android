@@ -401,7 +401,7 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 					+ "Lat: " + currentLoc.getLatitude() + "\n" + "Alt: "
 					+ currentLoc.getAltitude();
 
-			txtOutput.setText(sText);	
+			//txtOutput.setText(sText);	FIXME display distance properly
 		}
 		// sets this location as last location.
 		previousLoc = currentLoc;
