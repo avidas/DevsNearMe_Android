@@ -1,4 +1,4 @@
 Android_Frontend
 ================
 
-Android frontend for the devsNearMe app
+Android frontend for the GuideMe app
