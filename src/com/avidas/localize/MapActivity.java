@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -45,13 +47,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 
 public class MapActivity extends FragmentActivity implements LocationListener {
 
 	private Location currentLoc;
 	private Location previousLoc;
-	
+	 
 	private double totalDistance = 0;
 	private long eventStartTime = 0;
 	
@@ -286,6 +290,10 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 			// Clears all the existing markers
 			mGoogleMap.clear();
 			LatLng latLng = null;
+			
+			
+			
+			double test_lat1 = 0,test_lon1 = 0, test_lat2 = 0, test_lon2 = 0;
 
 			for (int i = 0; i < list.size(); i++) {
 			
@@ -300,7 +308,15 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 
 				// Getting longitude of the place
 				double lng = Double.parseDouble(hmPlace.get("lng"));
-
+				
+				if (i==0) {
+					test_lat1 = lat;
+					test_lon1 = lng;
+				}
+				if (i==1) {
+					test_lat2 = lat;
+					test_lon2 = lng;					
+				}
 				// Getting name
 				String name = hmPlace.get("place_name");
 				Log.d("PLACE_NAME :", name);
@@ -322,6 +338,10 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 				markers.add(marker_entry);
 							
 			}
+			
+			
+			findDirections(test_lat1,test_lon1,test_lat2,test_lon2, GMapV2Direction.MODE_WALKING);
+			
 			CameraUpdate update = CameraUpdateFactory.newLatLngZoom(latLng, 12);
 			mGoogleMap.moveCamera(update);
 			mGoogleMap.setOnMapClickListener(new OnMapClickListener(){
@@ -353,6 +373,7 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.map, menu);
 		return true;
@@ -493,5 +514,35 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 		double dist = ang * 6371; // earth's radius!
 		return dist;
 	}
+	
+	public void handleGetDirectionsResult(ArrayList<LatLng> directionPoints)
+	{
+	    Polyline newPolyline;
+	    GoogleMap mMap = ((SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map)).getMap(); 
+	    PolylineOptions rectLine = new PolylineOptions().width(3).color(Color.RED);
+
+	    for(int i = 0 ; i < directionPoints.size() ; i++) 
+	    {          
+	        rectLine.add(directionPoints.get(i));
+	    }
+	    newPolyline = mMap.addPolyline(rectLine);
+	}
+
+
+	public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode)
+	{
+	    Map<String, String> map = new HashMap<String, String>();
+	    map.put(GetDirectionsAsyncTask.USER_CURRENT_LAT, String.valueOf(fromPositionDoubleLat));
+	    map.put(GetDirectionsAsyncTask.USER_CURRENT_LONG, String.valueOf(fromPositionDoubleLong));
+	    map.put(GetDirectionsAsyncTask.DESTINATION_LAT, String.valueOf(toPositionDoubleLat));
+	    map.put(GetDirectionsAsyncTask.DESTINATION_LONG, String.valueOf(toPositionDoubleLong));
+	    map.put(GetDirectionsAsyncTask.DIRECTIONS_MODE, mode);
+
+	    GetDirectionsAsyncTask asyncTask = new GetDirectionsAsyncTask(this);
+	    
+	    asyncTask.execute(map); 
+	}
+	
+	
 
 }
