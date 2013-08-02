@@ -41,6 +41,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -293,7 +295,7 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 			
 			
 			
-			double test_lat1 = 0,test_lon1 = 0, test_lat2 = 0, test_lon2 = 0;
+			double test_lat1 = 0,test_lon1 = 0, test_lat2 = 0, test_lon2 = 0, test_lat3 = 0, test_lon3 = 0;
 
 			for (int i = 0; i < list.size(); i++) {
 			
@@ -317,6 +319,10 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 					test_lat2 = lat;
 					test_lon2 = lng;					
 				}
+				if (i==2) {
+					test_lat3 = lat;
+					test_lon3 = lng;					
+				}
 				// Getting name
 				String name = hmPlace.get("place_name");
 				Log.d("PLACE_NAME :", name);
@@ -336,16 +342,45 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 				// Placing a marker on the touched position
 				Marker marker_entry = mGoogleMap.addMarker(markerOptions);
 				markers.add(marker_entry);
-							
+				
 			}
 			
-			
-			findDirections(test_lat1,test_lon1,test_lat2,test_lon2, GMapV2Direction.MODE_WALKING);
+			//test drawing a route between points  
+			//findDirections(test_lat1,test_lon1,test_lat2,test_lon2, GMapV2Direction.MODE_WALKING);
+			//findDirections(test_lat2,test_lon2,test_lat3,test_lon3, GMapV2Direction.MODE_WALKING);
 			
 			CameraUpdate update = CameraUpdateFactory.newLatLngZoom(latLng, 12);
 			mGoogleMap.moveCamera(update);
+		
+			//called when info window is clicked
+			mGoogleMap.setOnInfoWindowClickListener(new OnInfoWindowClickListener(){
+				@Override
+				public void onInfoWindowClick(Marker m) {
+					//Toast.makeText(getBaseContext(), "Filler message " + m.getPosition().toString(), Toast.LENGTH_LONG).show();
+				}
+			});
+			
+			//Rendering custom view for info window. Needs to display picture, rating, description etc
+			GoogleMap mMap = ((SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map)).getMap(); 
+			mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
+				private final View contents = getLayoutInflater().inflate(R.layout.infowindowtest, null);
+				@Override
+				public View getInfoContents(Marker marker) {
+					// TODO Auto-generated method stub		
+					return null;
+				}
+				@Override
+				public View getInfoWindow(Marker marker) {
+					// TODO Auto-generated method stub
+					String title = marker.getTitle();
+					TextView txtTitle = ((TextView) contents.findViewById(R.id.txtInfoWindowTitle));
+					txtTitle.setText("Ok this works "+ title);
+					return contents;
+				}
+			});
+			
+			
 			mGoogleMap.setOnMapClickListener(new OnMapClickListener(){
-
 				@Override
 				public void onMapClick(LatLng arg0) {
 					LatLngBounds.Builder b = new LatLngBounds.Builder();
@@ -514,7 +549,9 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 		double dist = ang * 6371; // earth's radius!
 		return dist;
 	}
-	
+	/*
+	 * Draws the polyline after getting a list of points
+	 */
 	public void handleGetDirectionsResult(ArrayList<LatLng> directionPoints)
 	{
 	    Polyline newPolyline;
@@ -528,7 +565,9 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 	    newPolyline = mMap.addPolyline(rectLine);
 	}
 
-
+	/*
+	 * 
+	 */
 	public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode)
 	{
 	    Map<String, String> map = new HashMap<String, String>();
@@ -542,7 +581,4 @@ public class MapActivity extends FragmentActivity implements LocationListener {
 	    
 	    asyncTask.execute(map); 
 	}
-	
-	
-
 }
